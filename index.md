@@ -3,6 +3,7 @@
 
 - [我的五项兴趣爱好](#c1)
 - [人生起落图](#c2)
+- [芯片营销领域的工作思考](https://cy-dogear.github.io/writing/insistence-in-my-work.html)
 
 ---
 

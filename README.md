@@ -6,6 +6,7 @@
 - [人生起落图](#c2)
 
 - [芯片营销领域的工作思考](https://cy-dogear.github.io/writing/insistence-in-my-work.html)
+- <a href="https://cy-dogear.github.io/writing/insistence-in-my-work.html" target="_blank" rel="noopener noreferrer">芯片营销领域的工作思考</a>
 
 - [住房改造DIY（文集）](https://mcnugbhskyip.feishu.cn/wiki/SDdXwrOTQihSfkkDqpbczk97nVr?from=from_copylink)
 

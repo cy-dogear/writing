@@ -94,7 +94,7 @@
             min-height: 280px;
             padding: 1rem 1.2rem;
             
-            font-family: serif; /*左栏字体设置*/
+            font-family: 'Times New Roman', Times, serif; /*左栏字体设置*/
             font-size: 0.8rem;
             line-height: 1.2;
             border: 1px solid #dce3ec;
@@ -267,19 +267,21 @@
             const result = [];
             let inList = false;
             
+            const baseFontFamily = 'Times New Roman';
+
             // 标题的内联样式
             const headingStyles = {
-                4: 'font-size:18pt; font-weight:bold; text-align:left; margin:0; ',
-                5: 'font-size:16pt; font-weight:bold; text-align:left; margin:0; color:#00BFFF;',
-                6: 'font-size:14pt; font-weight:bold; text-align:left; margin:0;'
+                4: `font-size:18pt; font-weight:bold; text-align:left; margin:0; font-family: ${baseFontFamily};`,
+                5: `font-size:16pt; font-weight:bold; text-align:left; margin:0; color:#00BFFF; font-family: ${baseFontFamily};`,
+                6: `font-size:14pt; font-weight:bold; text-align:left; margin:0; font-family: ${baseFontFamily};`
             };
-            
+
             // 列表样式
-            const ulStyle = 'margin:6pt 0; padding-left:24pt; list-style-type:disc;';
-            const liStyle = 'margin:6pt 0; line-height:1.5; ';
-            
+            const ulStyle = `margin:6pt 0; padding-left:24pt; list-style-type:disc; font-family: ${baseFontFamily};`;
+            const liStyle = `margin:6pt 0; line-height:1.5; font-family: ${baseFontFamily};`;
+
             // 普通段落样式
-            const pStyle = 'margin:0; line-height:1.5; ';
+            const pStyle = `margin:0; line-height:1.5; font-family: ${baseFontFamily};`;
             
             for (let i = 0; i < lines.length; i++) {
                 const rawLine = lines[i];

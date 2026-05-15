@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Frequent-Char</title>
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%2307C160'/%3E%3Ctext x='50' y='80' font-size='80' text-anchor='middle' fill='black' font-family='serif'%3EF%3C/text%3E%3C/svg%3E">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        .app {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            background: #ffffff;
+            position: relative;
+        }
+
+        /* 上部85% - 浅豆沙绿背景 */
+        .display-area {
+            flex: 0 0 85%;
+            height: 85%;
+            background: #d8f0da;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            justify-content: center;  /* 水平居中整个网格容器 */
+        }
+
+        /* 格子网格容器：居中对齐，从左到右、从上到下 */
+        .grid-container {
+            width: auto;
+            max-width: 100%;
+            height: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(92px, 92px));
+            grid-auto-rows: 44px;
+            gap: 0px;
+            justify-content: center;   /* 网格内容居中（每行格子整体居中） */
+            align-content: start;      /* 顶部开始，超出底部裁剪 */
+            overflow: hidden;
+        }
+
+        /* 每个字符格：极浅绿色背景，可容纳4个16pt字符，点击复制 */
+        .char-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16pt;
+            font-family: serif;
+            font-weight: normal;
+            color: #111111;
+            background: #e8f5e9;  /* 极浅绿色 */
+            padding: 0 4px;
+            text-align: center;
+            line-height: 1.2;
+            word-break: break-all;
+            overflow: hidden;
+            white-space: normal;
+            cursor: pointer;
+            transition: background 0.1s ease;
+            border: 1px solid #d0e8d2;
+        }
+        
+        .char-cell:active {
+            background: #c8e6c9;
+        }
+
+        /* 下部15% - 浅灰白色背景 */
+        .input-area {
+            flex: 0 0 15%;
+            height: 15%;
+            background: #e8f5e9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* textarea 无边框，与背景同色 */
+        #textInput {
+            width: 100%;
+            height: 100%;
+            background: #e8f5e9;
+            border: none;
+            outline: none;
+            padding: 0 16px;
+            font-size: 18px;
+            font-family: inherit;
+            color: #111111;
+            resize: none;
+            box-shadow: none;
+        }
+
+        #textInput::placeholder {
+            color: transparent;
+        }
+
+        #textInput:focus {
+            border: none;
+            outline: none;
+            background: #ffffff;
+        }
+
+        /* 右下角双按钮容器 - 文字链接样式 */
+        .button-group {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 16px;
+            background: transparent;
+            z-index: 100;
+        }
+
+        .action-link {
+            font-family: system-ui, -apple-system, sans-serif;
+            font-size: 14px;
+            color: #2c5e2e;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .action-link:hover {
+            background: rgba(44, 94, 46, 0.1);
+            text-decoration: underline;
+        }
+
+        .action-link:active {
+            background: rgba(44, 94, 46, 0.2);
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="display-area">
+        <div class="grid-container" id="gridContainer"></div>
+    </div>
+    <div class="input-area">
+        <textarea id="textInput" rows="1" autocomplete="off"></textarea>
+    </div>
+</div>
+<div class="button-group">
+    <button class="action-link" id="exportBtn">导出</button>
+    <button class="action-link" id="importBtn">导入</button>
+</div>
+
+<script>
+    // ============================================================
+    // 字符频率统计器 - 双按钮版
+    // 核心存储：localStorage（自动持久化，刷新不丢数据）
+    // 导出：点击导出按钮 → 保存到 frequent-char.txt（覆盖）
+    // 导入：点击导入按钮 → 读取 txt，覆盖 localStorage 并刷新显示
+    // 网格单元格组整体居中对齐
+    // ============================================================
+
+    // localStorage 的 key
+    const STORAGE_KEY = 'char_frequency_data';
+
+    // 初始数据字符串（仅当 localStorage 为空时使用）
+    const INITIAL_DATA = "{「 」,3},{﹝﹞,3},{≠,3},{Ω,3},{×,2},{≈,2},{━,2},{★,2},{☆,2},{⚠,2},{✅,2},{✖,2},{²,2},{³,2},{α,2},{β,2},{γ,2},{θ,2},{μ,2},{π,2},{φ,2},{Φ,2},{χ,2},{ω,2},{–,1},{※,1},{°,1},{℃,1},{←,1},{→,1},{↑,1},{↓,1},{↖,1},{↗,1},{↘,1},{↙,1},{↻,1},";
+    
+    // 核心数据：频率 Map
+    let frequencyMap = new Map();
+    
+    // 当前存储格式字符串（缓存）
+    let storageFormatString = "";
+    
+    // DOM 元素
+    const gridContainer = document.getElementById('gridContainer');
+    const textInput = document.getElementById('textInput');
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+
+    /**
+     * 判断字符是否被忽略（空格、制表符、换行符全部忽略）
+     */
+function isIgnoredChar(ch) {
+    // 1. 空白字符
+    if (ch === ' ' || ch === '\t' || ch === '\n' || ch === '\r') return true;
+    if (ch === '\u3000' || ch === '\u200B' || ch === '\uFEFF') return true;
+    
+    const code = ch.charCodeAt(0);
+    
+    // 2. ASCII 可见字符（数字、字母、英文标点）32-126
+    if (code >= 32 && code <= 126) return true;
+    
+    // 3. 中文标点符号（常见范围）
+    // 全角逗号、句号、问号、感叹号、分号、冒号、引号、括号、顿号等
+    if ((code >= 0x3000 && code <= 0x303F) ||  // CJK 符号和标点
+        (code >= 0xFF00 && code <= 0xFF0F) ||  // 全角 ASCII 标点起始部分
+        (code >= 0xFF1A && code <= 0xFF20) ||  // 全角分号到空格
+        (code >= 0xFF3B && code <= 0xFF40) ||  // 全角方括号到反引号
+        (code >= 0xFF5B && code <= 0xFF65) ||  // 全角花括号到半角小符号
+        code === 0x3001 ||  // 顿号 、
+        code === 0x3002 ||  // 句号 。
+        code === 0xFF0C ||  // 全角逗号 ，
+        code === 0xFF1B ||  // 全角分号 ；
+        code === 0xFF1A ||  // 全角冒号 ：
+        code === 0xFF01 ||  // 全角感叹号 ！
+        code === 0xFF1F ||  // 全角问号 ？
+        code === 0x201C ||  // 左双引号 “
+        code === 0x201D ||  // 右双引号 ”
+        code === 0x2018 ||  // 左单引号 ‘
+        code === 0x2019)    // 右单引号 ’
+        return true;
+    
+    // 4. 控制字符（0-31）
+    if (code < 32 && code !== 9) return true;
+    
+    // 其他字符（如中文字符、日文、韩文、emoji等）参与统计
+    return false;
+}
+
+    /**
+     * 从 Map 生成存储格式字符串：{字符,次数},{字符,次数},
+     * 按频率降序，同频按字符码点升序
+     */
+    function generateStorageStringFromMap(map) {
+        const sortedEntries = Array.from(map.entries()).sort((a, b) => {
+            if (a[1] !== b[1]) return b[1] - a[1];
+            return a[0].localeCompare(b[0]);
+        });
+        let parts = [];
+        for (const [char, count] of sortedEntries) {
+            parts.push(`{${char},${count}}`);
+        }
+        return parts.join(',') + (parts.length > 0 ? ',' : '');
+    }
+
+    /**
+     * 从存储格式字符串解析出 Map
+     */
+    function parseStorageStringToMap(str) {
+        const newMap = new Map();
+        if (!str || str.trim() === "") return newMap;
+        const regex = /\{([^,]+),(\d+)\}/g;
+        let match;
+        while ((match = regex.exec(str)) !== null) {
+            const char = match[1];
+            const count = parseInt(match[2], 10);
+            if (!isNaN(count) && count > 0) {
+                newMap.set(char, count);
+            }
+        }
+        return newMap;
+    }
+
+    /**
+     * 保存到 localStorage
+     */
+    function saveToLocalStorage() {
+        localStorage.setItem(STORAGE_KEY, storageFormatString);
+    }
+
+    /**
+     * 从 localStorage 加载
+     */
+    function loadFromLocalStorage() {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved && saved.trim() !== "") {
+            frequencyMap = parseStorageStringToMap(saved);
+        } else if (INITIAL_DATA && INITIAL_DATA.trim() !== "") {
+            // 首次运行，使用初始字符串
+            frequencyMap = parseStorageStringToMap(INITIAL_DATA);
+            storageFormatString = generateStorageStringFromMap(frequencyMap);
+            saveToLocalStorage();
+        } else {
+            frequencyMap.clear();
+        }
+        fullUpdate();
+    }
+
+    /**
+     * 更新界面：根据当前 frequencyMap 渲染格子
+     */
+    function renderDisplay() {
+        const sortedChars = Array.from(frequencyMap.entries())
+            .sort((a, b) => {
+                if (a[1] !== b[1]) return b[1] - a[1];
+                return a[0].localeCompare(b[0]);
+            })
+            .map(entry => entry[0]);
+        
+        if (sortedChars.length === 0) {
+            gridContainer.innerHTML = '';
+            return;
+        }
+        
+        const fragment = document.createDocumentFragment();
+        for (const ch of sortedChars) {
+            const cell = document.createElement('div');
+            cell.className = 'char-cell';
+            cell.textContent = ch;
+            cell.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // 复制字符到剪贴板
+                navigator.clipboard.writeText(ch).catch(() => {
+                    const ta = document.createElement('textarea');
+                    ta.value = ch;
+                    ta.style.position = 'fixed';
+                    ta.style.top = '-9999px';
+                    document.body.appendChild(ta);
+                    ta.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(ta);
+                });
+            });
+            fragment.appendChild(cell);
+        }
+        gridContainer.innerHTML = '';
+        gridContainer.appendChild(fragment);
+    }
+
+    /**
+     * 完整刷新：更新 storageFormatString、刷新显示、保存到 localStorage
+     */
+    function fullUpdate() {
+        storageFormatString = generateStorageStringFromMap(frequencyMap);
+        renderDisplay();
+        saveToLocalStorage();
+    }
+
+    /**
+     * 添加新文本：过滤空白字符后累积到频率 Map
+     */
+    function addText(inputText) {
+        if (!inputText || inputText.length === 0) return;
+        
+        let addedAny = false;
+        for (let i = 0; i < inputText.length; i++) {
+            const ch = inputText[i];
+            if (isIgnoredChar(ch)) continue;
+            const newCount = (frequencyMap.get(ch) || 0) + 1;
+            frequencyMap.set(ch, newCount);
+            addedAny = true;
+        }
+        
+        if (addedAny) {
+            fullUpdate();
+        }
+    }
+
+    /**
+     * 导出：把当前 localStorage 字符串写入 frequent-char.txt（覆盖）
+     */
+    // 存储文件句柄到 IndexedDB
+    async function saveFileHandle(handle, key) {
+        if (!window.indexedDB) return;
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open('FileHandleDB', 1);
+            request.onupgradeneeded = () => {
+                const db = request.result;
+                if (!db.objectStoreNames.contains('handles')) {
+                    db.createObjectStore('handles');
+                }
+            };
+            request.onsuccess = () => {
+                const db = request.result;
+                const tx = db.transaction('handles', 'readwrite');
+                const store = tx.objectStore('handles');
+                store.put(handle, key);
+                tx.oncomplete = () => { db.close(); resolve(); };
+                tx.onerror = () => { db.close(); reject(); };
+            };
+            request.onerror = () => reject();
+        });
+    }
+
+    // 恢复文件句柄
+    async function getFileHandle(key) {
+        if (!window.indexedDB) return null;
+        return new Promise((resolve) => {
+            const request = indexedDB.open('FileHandleDB', 1);
+            request.onupgradeneeded = () => {
+                const db = request.result;
+                if (!db.objectStoreNames.contains('handles')) {
+                    db.createObjectStore('handles');
+                }
+            };
+            request.onsuccess = () => {
+                const db = request.result;
+                const tx = db.transaction('handles', 'readonly');
+                const store = tx.objectStore('handles');
+                const getRequest = store.get(key);
+                getRequest.onsuccess = () => {
+                    db.close();
+                    resolve(getRequest.result || null);
+                };
+                getRequest.onerror = () => {
+                    db.close();
+                    resolve(null);
+                };
+            };
+            request.onerror = () => resolve(null);
+        });
+    }
+
+    /*
+    在控制台运行以下代码即可让当前句柄失效：indexedDB.deleteDatabase('FileHandleDB');
+    */
+
+    async function exportToFile() {
+        try {
+            // 尝试恢复之前保存的文件句柄
+            let handle = await getFileHandle('freq_file_handle');
+            
+            // 如果句柄存在，先检查文件是否真实存在
+            if (handle) {
+                try {
+                    // 尝试获取文件信息，如果文件不存在会抛出 NotFoundError
+                    await handle.getFile();
+                } catch (err) {
+                    // 文件不存在，清除失效句柄
+                    if (err.name === 'NotFoundError') {
+                        await saveFileHandle(null, 'freq_file_handle');
+                        handle = null;
+                    }
+                }
+            }
+            
+            // 如果没有有效的句柄，让用户选择
+            if (!handle) {
+                handle = await window.showSaveFilePicker({
+                    suggestedName: 'frequent-char.txt',
+                    types: [{
+                        description: '文本文件',
+                        accept: { 'text/plain': ['.txt'] }
+                    }]
+                });
+                await saveFileHandle(handle, 'freq_file_handle');
+            }
+            
+            const writable = await handle.createWritable();
+            await writable.write(storageFormatString);
+            await writable.close();
+            alert(`✅ 导出成功！\n数据已写入：${handle.name || 'frequent-char.txt'}`);
+        } catch (err) {
+            // 目录变动等其他错误
+            if (err.name === 'NotFoundError' || err.message.includes('could not be found')) {
+                await saveFileHandle(null, 'freq_file_handle');
+                alert('原文件路径失效，请重新选择保存位置。');
+                return exportToFile();
+            }
+            if (err.name !== 'AbortError') {
+                alert(`❌ 导出失败：${err.message}`);
+            }
+        }
+    }
+
+    async function importFromFile() {
+        try {
+            // 尝试恢复之前保存的文件句柄
+            let handle = await getFileHandle('freq_file_handle');
+            
+            // 如果句柄存在，先检查文件是否真实存在
+            if (handle) {
+                try {
+                    // 尝试获取文件信息，如果文件不存在会抛出 NotFoundError
+                    await handle.getFile();
+                } catch (err) {
+                    // 文件不存在，清除失效句柄
+                    if (err.name === 'NotFoundError') {
+                        await saveFileHandle(null, 'freq_file_handle');
+                        handle = null;
+                    }
+                }
+            }
+            
+            // 如果没有有效的句柄，让用户选择
+            if (!handle) {
+                const [h] = await window.showOpenFilePicker({
+                    suggestedName: 'frequent-char.txt',
+                    types: [{
+                        description: '文本文件',
+                        accept: { 'text/plain': ['.txt'] }
+                    }]
+                });
+                handle = h;
+                await saveFileHandle(handle, 'freq_file_handle');
+            }
+            
+            const file = await handle.getFile();
+            const content = await file.text();
+            
+            if (content === undefined || content === null) {
+                alert('⚠️ 文件读取失败，未做任何修改。');
+                return;
+            }
+            
+            if (content.trim() === '') {
+                frequencyMap.clear();
+                fullUpdate();
+                alert(`✅ 导入成功！\n已清空所有数据。`);
+                return;
+            }
+            
+            const newMap = parseStorageStringToMap(content);
+            if (newMap.size === 0 && content.length > 0) {
+                alert('❌ 导入失败：文件格式不正确。\n期望格式：{字符,次数},{字符,次数},');
+                return;
+            }
+            
+            frequencyMap = newMap;
+            fullUpdate();
+            alert(`✅ 导入成功！\n已从 ${handle.name || 'frequent-char.txt'} 覆盖当前数据。`);
+        } catch (err) {
+            // 目录变动等其他错误
+            if (err.name === 'NotFoundError' || err.message.includes('could not be found')) {
+                await saveFileHandle(null, 'freq_file_handle');
+                alert('原文件路径失效，请重新选择文件。');
+                return importFromFile();
+            }
+            if (err.name !== 'AbortError') {
+                alert(`❌ 导入失败：${err.message}`);
+            }
+        }
+    }
+
+    // 监听文本输入框的回车事件
+    textInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            const rawText = textInput.value;
+            if (rawText && rawText.length > 0) {
+                addText(rawText);
+            }
+            textInput.value = '';
+            textInput.focus();
+        }
+    });
+    
+    // 导出按钮
+    exportBtn.addEventListener('click', exportToFile);
+    
+    // 导入按钮
+    importBtn.addEventListener('click', importFromFile);
+    
+    // 初始化：从 localStorage 加载数据
+    loadFromLocalStorage();
+    
+    // 聚焦输入框
+    textInput.focus();
+</script>
+</body>
+</html>

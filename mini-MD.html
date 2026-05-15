@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+   
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>✒️mini-MD</title> 
+
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%23d7e9d7'/%3E%3Ctext x='45' y='65' font-size='40' text-anchor='middle' fill='black' font-family='Arial, sans-serif'%3E✒️m%3C/text%3E%3C/svg%3E">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f5f7fb;
+            font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            color: #1e2a3e;
+        }
+
+        /* 双栏容器 */ 
+        .app-container {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 左侧栏 */
+        .left-panel {
+            flex: 1;
+            background-color: #fffff0;
+            display: flex;
+            flex-direction: column;
+            padding: 0.5rem 1rem 1rem 1rem;
+            overflow-y: auto;
+            border-right: 1px solid #e9edf2;
+        }
+
+        /* 6个按钮叫char-btn，存放在quickchars*/ 
+        /* 字符快捷按钮区域 - 放在顶部，不占额外高度影响文本框 */
+        .char-buttons-container {
+            margin-bottom: 0.5rem; /*6个按钮与textarea输入框的间距*/
+            flex-shrink: 0;
+        }
+
+        .char-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .char-btn {
+            flex: 1;
+            text-align: center;
+            padding: 0.2rem 0; /* 控制6个按钮上下内边距（高度） */
+            background-color: #ffffff;
+            border: 1px solid #dce3ec;
+            font-family: 'Consolas', monospace;
+            font-size: 0.7rem; /* 字号 → 影响6个按钮文字高度 */
+            font-weight: normal;
+            color: #2c5e2e;
+            cursor: pointer;
+            transition: all 0.12s ease;
+            border-radius: 0;
+        }
+
+        .char-btn:hover {
+            background-color: #e8f0e8;
+            border-color: #a0b3c9;
+        }
+
+        .char-btn:active {
+            transform: scale(0.97);
+            background-color: #d0e0d0;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
+
+        textarea {
+            width: 100%;
+            flex: 1;
+            min-height: 280px;
+            padding: 1rem 1.2rem;
+            
+            font-family: serif; /*左栏字体设置*/
+            font-size: 0.8rem;
+            line-height: 1.2;
+            border: 1px solid #dce3ec;
+            background-color: #ffffff;
+            resize: vertical;
+            outline: none;
+            color: #1f2d3d;
+        }
+
+        textarea:focus {
+            border-color: #a0b3c9;
+            background-color: #d7e9d7;
+        }
+
+        /* 右侧栏：豆沙绿背景 */
+        .right-panel {
+            flex: 1;
+            background-color: #d7e9d7;
+            display: flex;
+            flex-direction: column;
+            padding: 0.5rem 1rem 1rem 1rem;
+            overflow-y: auto;
+        }
+
+        .output-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 0.5rem;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: flex-start;
+            flex-shrink: 0;
+            margin-bottom: 0;
+            padding: 0;
+        }
+
+        .copy-btn {
+            background-color: #2c5e2e;
+            border: none;
+            padding: 0.25rem 0.8rem;  /* 按钮上下内边距 → 控制高度 */
+            font-size: 0.7rem; /* 字号 → 影响“全选并复制”文字高度 */
+            font-weight: 500;
+            color: white;
+            border-radius: 0;
+            cursor: pointer;
+            transition: background 0.15s ease;
+            font-family: inherit;
+            letter-spacing: 0.5px;
+        }
+
+        .copy-btn:hover {
+            background-color: #1f4521;
+        }
+
+        .copy-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* 右侧输出内容区 */
+        .output-content {
+            flex: 1;
+            background-color: #FFFFFF;
+            padding: 1rem 1.2rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            overflow-y: auto;
+            border: none;
+            color: #1f2d3d;
+        }
+
+        .output-content:empty::before {
+            content: "✨ 右侧显示Markdown解析结果";
+            color: #8aa0ae;
+            font-style: normal;
+            font-weight: 300;
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+        }
+
+        /* 响应式 */
+        @media (max-width: 720px) {
+            .app-container {
+                flex-direction: column;
+            }
+            .left-panel {
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+                flex: 1 1 50%;
+            }
+            .right-panel {
+                flex: 1 1 50%;
+            }
+            body {
+                overflow: auto;
+            }
+            textarea {
+                min-height: 180px;
+            }
+            .char-buttons {
+                gap: 0.3rem;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- 左侧面板：Markdown输入区 -->
+        <div class="left-panel">
+            <!-- 6个快捷字符按钮，放在顶部，删除了原来的 label -->
+            <div class="char-buttons-container">
+                <div class="char-buttons" id="charButtons">
+                    <!-- 6个字符按钮由JS动态生成 -->
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <textarea id="sourceText" placeholder="支持最小集合 Markdown 语法：&#10;&#10;# 一级标题&#10;## 二级标题&#10;### 三级标题&#10;&#10;- 无序列表项1&#10;- 无序列表项2&#10;* 星号列表也支持&#10;&#10;"></textarea>
+            </div>
+        </div>
+
+        <!-- 右侧面板 -->
+        <div class="right-panel">
+            <div class="output-wrapper">
+                <div class="action-bar">
+                    <button class="copy-btn" id="copyButton">全选并复制 📋</button>
+                </div>
+                <div id="formattedOutput" class="output-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ------------------------------
+        // HTML 转义工具 (XSS防护)
+        // ------------------------------
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // ----------------------------------------------
+        // 最小集合 Markdown 解析器
+        // ----------------------------------------------
+        function parseMinimalMarkdown(markdown) {
+            if (typeof markdown !== 'string') {
+                return '';
+            }
+
+            const lines = markdown.split('\n');
+            const result = [];
+            let inList = false;
+            
+            // 标题的内联样式
+            const headingStyles = {
+                4: 'font-size:18pt; font-weight:bold; text-align:left; margin:0; ',
+                5: 'font-size:16pt; font-weight:bold; text-align:left; margin:0; color:#00BFFF;',
+                6: 'font-size:14pt; font-weight:bold; text-align:left; margin:0;'
+            };
+            
+            // 列表样式
+            const ulStyle = 'margin:6pt 0; padding-left:24pt; list-style-type:disc;';
+            const liStyle = 'margin:6pt 0; line-height:1.5; ';
+            
+            // 普通段落样式
+            const pStyle = 'margin:0; line-height:1.5; ';
+            
+            for (let i = 0; i < lines.length; i++) {
+                const rawLine = lines[i];
+                const trimmedLine = rawLine.trim();
+                const isEmptyLine = trimmedLine === '';
+                
+                if (isEmptyLine) {
+                    if (inList) {
+                        result.push('</ul>');
+                        inList = false;
+                    }
+                    result.push('<p style="margin:0;"><br></p>');
+                    continue;
+                }
+
+                // 标题匹配逻辑
+                const headingMatch = rawLine.match(/^(#{1,3})\s+(.*)$/);
+                if (headingMatch) {
+                    if (inList) {
+                        result.push('</ul>');
+                        inList = false;
+                    }
+                    const hashCount = headingMatch[1].length;   // 1, 2, 或 3
+                    const level = hashCount + 3;                // 映射为 4, 5, 或 6
+                    const contentRaw = headingMatch[2];
+                    const escapedContent = escapeHtml(contentRaw);
+                    const style = headingStyles[level];
+                    result.push(`<h${level} style="${style}">${escapedContent}</h${level}>`);
+                    continue;
+                }
+                
+                const listMatch = rawLine.match(/^(\*|\-)\s+(.*)$/);
+                if (listMatch) {
+                    const contentRaw = listMatch[2];
+                    const escapedContent = escapeHtml(contentRaw);
+                    if (!inList) {
+                        result.push(`<ul style="${ulStyle}">`);
+                        inList = true;
+                    }
+                    result.push(`<li style="${liStyle}">${escapedContent}</li>`);
+                    continue;
+                }
+                
+                if (inList) {
+                    result.push('</ul>');
+                    inList = false;
+                }
+                const escapedLine = escapeHtml(rawLine);
+                if (escapedLine !== '') {
+                    result.push(`<p style="${pStyle}">${escapedLine}</p>`);
+                }
+            }
+            
+            if (inList) {
+                result.push('</ul>');
+            }
+            
+            return result.join('\n');
+        }
+
+        // --------------------------------------------------------------
+        // 格式转换主函数
+        // --------------------------------------------------------------
+        function transformFormat(input) {
+            return parseMinimalMarkdown(input);
+        }
+
+        // --------------------------------------------------------------
+        // 6个字符按钮快捷复制功能
+        // --------------------------------------------------------------
+        const quickChars = ['✔', '✅❌', '■', '→', '➡️', '⚠'];
+        
+        function initQuickCharButtons() {
+            const container = document.getElementById('charButtons');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            quickChars.forEach((char, index) => {
+                const btn = document.createElement('div');
+                btn.className = 'char-btn';
+                btn.textContent = char;
+                btn.setAttribute('data-char', char);
+                btn.setAttribute('data-index', index);
+                
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const charToCopy = btn.getAttribute('data-char');
+                    
+                    try {
+                        await navigator.clipboard.writeText(charToCopy);
+                        const originalText = btn.textContent;
+                        btn.textContent = '✓';
+                        btn.style.backgroundColor = '#d0e8d0';
+                        setTimeout(() => {
+                            btn.textContent = originalText;
+                            btn.style.backgroundColor = '';
+                        }, 500);
+                    } catch (err) {
+                        btn.textContent = '✗';
+                        setTimeout(() => {
+                            btn.textContent = charToCopy;
+                        }, 500);
+                        console.warn('复制失败', err);
+                    }
+                });
+                
+                container.appendChild(btn);
+            });
+        }
+        
+        // --------------------------------------------------------------
+        // DOM 元素与交互逻辑
+        // --------------------------------------------------------------
+        const sourceTextarea = document.getElementById('sourceText');
+        const outputDiv = document.getElementById('formattedOutput');
+        const copyBtn = document.getElementById('copyButton');
+
+        function updateFormattedOutput() {
+            const rawText = sourceTextarea.value;
+            const convertedHtml = transformFormat(rawText);
+            outputDiv.innerHTML = convertedHtml;
+        }
+
+        function convertHtmlToPlainWithBullets(html) {
+            if (!html) return '';
+            
+            let text = html;
+            
+            // 1. 将 <li> 列表项转为 - 前缀
+            text = text.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, (match, content) => {
+                const trimmedContent = content.replace(/^\s+/, '').replace(/\s+$/, '');
+                return `- ${trimmedContent}`;
+            });
+            
+            // 2. 移除所有 HTML 标签
+            text = text.replace(/<[^>]+>/g, '');
+            
+            // 3. 处理实体字符
+            text = text.replace(/&nbsp;/g, ' ');
+            text = text.replace(/&lt;/g, '<');
+            text = text.replace(/&gt;/g, '>');
+            text = text.replace(/&amp;/g, '&');
+            
+            // 4. 去掉列表项前面的多余空行
+            text = text.replace(/\n+(?=- )/g, '\n');
+            
+            // 5. 将所有 3 个及以上连续换行压缩成 2 个（统一空行规则）
+            text = text.replace(/\n{3,}/g, '\n\n');
+            
+            // 6. 去掉最前和最后的空行
+            text = text.replace(/^\s*\n+/, '');
+            text = text.replace(/\n+\s*$/, '');
+            
+            return text;
+        }
+
+        async function selectAndCopyOutput() {
+            const htmlToCopy = outputDiv.innerHTML;
+            const plainTextToCopy = convertHtmlToPlainWithBullets(htmlToCopy);
+            
+            try {
+                const selection = window.getSelection();
+                if (selection) {
+                    selection.removeAllRanges();
+                }
+                const range = document.createRange();
+                range.selectNodeContents(outputDiv);
+                if (selection) {
+                    selection.addRange(range);
+                }
+                outputDiv.style.transition = 'background 0.1s';
+                outputDiv.style.backgroundColor = '#faf0cf';
+                setTimeout(() => {
+                    outputDiv.style.backgroundColor = '';
+                }, 200);
+            } catch (selectError) {
+                console.warn('全选高亮反馈失败', selectError);
+            }
+
+            try {
+                const clipboardItemData = {
+                    'text/html': new Blob([htmlToCopy], { type: 'text/html' }),
+                    'text/plain': new Blob([plainTextToCopy], { type: 'text/plain' })
+                };
+                
+                await navigator.clipboard.write([
+                    new ClipboardItem(clipboardItemData)
+                ]);
+                
+                const originalText = copyBtn.innerText;
+                copyBtn.innerText = '✓ 已复制';
+                setTimeout(() => {
+                    copyBtn.innerText = originalText;
+                }, 1500);
+            } catch (clipErr) {
+                console.warn('ClipboardItem API 失败，尝试降级', clipErr);
+                try {
+                    await navigator.clipboard.writeText(plainTextToCopy);
+                    const originalText = copyBtn.innerText;
+                    copyBtn.innerText = '✓ 已复制';
+                    setTimeout(() => {
+                        copyBtn.innerText = originalText;
+                    }, 1500);
+                } catch (fallbackErr) {
+                    try {
+                        const success = document.execCommand('copy');
+                        if (success) {
+                            const originalText = copyBtn.innerText;
+                            copyBtn.innerText = '✓ 已复制';
+                            setTimeout(() => {
+                                copyBtn.innerText = originalText;
+                            }, 1500);
+                        } else {
+                            copyBtn.innerText = '复制失败';
+                            setTimeout(() => {
+                                copyBtn.innerText = '全选并复制 📋';
+                            }, 1500);
+                        }
+                    } catch (execErr) {
+                        copyBtn.innerText = '❌ 不支持复制';
+                        setTimeout(() => {
+                            copyBtn.innerText = '全选并复制 📋';
+                        }, 1500);
+                    }
+                }
+            } finally {
+                setTimeout(() => {
+                    const sel = window.getSelection();
+                    if (sel && sel.rangeCount > 0) {
+                        sel.removeAllRanges();
+                    }
+                }, 1000);
+            }
+        }
+
+        sourceTextarea.addEventListener('input', function() {
+            updateFormattedOutput();
+        });
+
+        copyBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            selectAndCopyOutput();
+        });
+
+        initQuickCharButtons();
+        
+        // 滚动同步（无冲突版本）
+        if (typeof window.scrollSyncInitialized === 'undefined') {
+            window.scrollSyncInitialized = true;
+            
+            const rightScrollElem = document.getElementById('formattedOutput');
+            let isScrolling = false;
+            
+            function onLeftScroll() {
+                if (isScrolling) return;
+                isScrolling = true;
+                const percent = sourceTextarea.scrollTop / (sourceTextarea.scrollHeight - sourceTextarea.clientHeight);
+                rightScrollElem.scrollTop = percent * (rightScrollElem.scrollHeight - rightScrollElem.clientHeight);
+                isScrolling = false;
+            }
+            
+            function onRightScroll() {
+                if (isScrolling) return;
+                isScrolling = true;
+                const percent = rightScrollElem.scrollTop / (rightScrollElem.scrollHeight - rightScrollElem.clientHeight);
+                sourceTextarea.scrollTop = percent * (sourceTextarea.scrollHeight - sourceTextarea.clientHeight);
+                isScrolling = false;
+            }
+            
+            sourceTextarea.addEventListener('scroll', onLeftScroll);
+            rightScrollElem.addEventListener('scroll', onRightScroll);
+        }
+        
+        const defaultMarkdown = '';
+        sourceTextarea.value = defaultMarkdown;
+        updateFormattedOutput();
+        sourceTextarea.focus();
+        
+        console.log('✅ 已加载 | 快捷按钮已移至顶部');
+    </script>
+
+</body>
+</html>

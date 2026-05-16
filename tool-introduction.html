@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>写作辅助工具集 · 说明文档</title>
+    <style>
+        /* 极简风格 - 纯文档阅读体验，类未渲染但优雅的 markdown 风格 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #fefefe;
+            font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', 'Noto Sans', 'SF Pro Text', sans-serif;
+            color: #1f1f1e;
+            line-height: 1.55;
+            padding: 2rem 1rem;
+        }
+
+        .document-container {
+            max-width: 980px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 28px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 0 0 1px rgba(0, 0, 0, 0.01);
+            padding: 2.2rem 2rem 3rem 2rem;
+        }
+
+        /* 极简标题体系 */
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            margin: 0 0 0.75rem 0;
+            padding-bottom: 0.25rem;
+            border-bottom: 2px solid #eaeae7;
+            color: #151513;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin: 1.8rem 0 0.8rem 0;
+            padding-left: 0;
+            color: #2c2c2a;
+            border-left: 3px solid #d0cfca;
+            padding-left: 0.75rem;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin: 1.4rem 0 0.6rem 0;
+            color: #3a3a38;
+        }
+
+        h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 1rem 0 0.3rem 0;
+            color: #4b4b48;
+        }
+
+        /* 目录专用样式 */
+        .toc {
+            background: #fafaf7;
+            border-radius: 24px;
+            padding: 1.2rem 1.8rem;
+            margin: 1.5rem 0 2rem 0;
+            border: 1px solid #ecece8;
+        }
+
+        .toc p {
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+            color: #2b2b28;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding-left: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .toc-list li {
+            margin: 0;
+        }
+
+        .toc-link {
+            text-decoration: none;
+            color: #4f6f8f;
+            border-bottom: 1px solid transparent;
+            transition: 0.1s;
+            font-size: 0.95rem;
+        }
+
+        .toc-link:hover {
+            color: #1f3b4f;
+            border-bottom-color: #9bb7d0;
+        }
+
+        code, .code-inline {
+            font-family: 'SF Mono', 'Menlo', 'Cascadia Code', 'JetBrains Mono', monospace;
+            background: #f3f3f0;
+            padding: 0.2rem 0.4rem;
+            border-radius: 10px;
+            font-size: 0.85em;
+            color: #c4482e;
+        }
+
+        pre {
+            background: #f5f5f2;
+            padding: 1rem;
+            border-radius: 20px;
+            overflow-x: auto;
+            font-size: 0.8rem;
+            font-family: monospace;
+            margin: 1rem 0;
+            border: 1px solid #e9e9e5;
+            color: #2d2d2a;
+        }
+
+        ul, ol {
+            margin: 0.6rem 0 0.6rem 1.6rem;
+        }
+
+        li {
+            margin: 0.3rem 0;
+        }
+
+        p {
+            margin: 0.8rem 0;
+            line-height: 1.55;
+        }
+
+        hr {
+            margin: 2rem 0;
+            border: none;
+            border-top: 1px solid #eaeae6;
+        }
+
+        a:not(.toc-link) {
+            color: #4f6f8f;
+            text-decoration: none;
+            border-bottom: 1px solid #d6dfe8;
+        }
+
+        a:not(.toc-link):hover {
+            color: #1f3b4f;
+            border-bottom-color: #4f6f8f;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 1.2rem;
+            font-size: 0.8rem;
+            background: #f5f5f2;
+            padding: 0.2rem 1rem;
+            border-radius: 30px;
+            text-decoration: none;
+            color: #5f5f5a;
+            border: 1px solid #e2e1dc;
+        }
+
+        .back-link:hover {
+            background: #ecece8;
+            color: #2b4b6e;
+        }
+
+        .section-anchor {
+            scroll-margin-top: 1rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            font-size: 0.7rem;
+            color: #aaa9a4;
+            border-top: 1px solid #efefea;
+            padding-top: 1.8rem;
+        }
+
+        @media (max-width: 640px) {
+            .document-container {
+                padding: 1.5rem;
+            }
+            h1 {
+                font-size: 1.7rem;
+            }
+            h2 {
+                font-size: 1.3rem;
+            }
+            .toc {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="document-container">
+    <h1>辅助写作的工具软件</h1>
+    
+    <!-- 目录区块，链接实现精确跳转 -->
+    <div class="toc">
+        <p>📄 （目录）</p>
+        <ul class="toc-list">
+            <li><a href="#mini-md-section" class="toc-link">"mini-MD" is a Minimal Markdown Editor →</a></li>
+            <li><a href="#frequent-char-section" class="toc-link">“frequent-char” 写作时经常要用的字符串输入工具 →</a></li>
+        </ul>
+    </div>
+
+    <!-- ================= 第一部分：mini-MD ================= -->
+    <div id="mini-md-section" class="section-anchor"></div>
+    <h2>📌 "mini-MD" is a Minimal Markdown Editor</h2>
+    
+    <h3>一、它是什么？与常规 Markdown 解析器的区别</h3>
+    <h4>1 定位：一个“20kB”的轻量级输入中转站，用于带简易标记的纯文本初稿写作。</h4>
+    <p>我习惯用plain TXT写初稿，现在觉得在TXT基础上增加一些markdown标记，做到“纲举目张”也挺好，所以有了以下设计安排。<br>
+    我不喜欢市面上的markdown编辑器（诸如notepad, VS code, WPS, Feishu），它们的解析设置不给用户修改（或是我没找到），所以做了这个叫做“mini-MD”的小工具。</p>
+    
+    <h4>2 与常规工具的核心不同：</h4>
+    <ul>
+        <li><strong>保留空行</strong>：您输入的回车空行会原样保留（常见解析器会压缩连续空行），便于纯文本环境下阅读。</li>
+        <li><strong>最小语法集</strong>：只支持 <strong>三级标题（#, ##, ###）</strong> + <strong>无序列表（- 或 *）</strong>，在这工具里用不着更多语法标记；这工具不是为了替代VS Code。</li>
+        <li><strong>标题层级映射特殊</strong>：<code>#</code> → 标题4，<code>##</code> → 标题5，<code>###</code> → 标题6 —— 这是为了后续粘贴到 <strong>Word</strong> 时能直接匹配我的文档中的层级（从4级开始）。</li>
+        <li><strong>极度轻量</strong>：约20KB的单HTML文件，免安装，跨平台（保存到桌面即可离线使用）。</li>
+    </ul>
+    
+    <h3>二、怎么使用它？</h3>
+    <ol>
+        <li><strong>在线访问</strong>：<a href="https://cy-dogear.github.io/writing/mini-MD.html" target="_blank" rel="noopener">→ https://cy-dogear.github.io/writing/mini-MD.html</a></li>
+        <li><strong>离线使用</strong>：将HTML文件保存到桌面，双击打开即可。</li>
+        <li><strong>日常操作</strong>：
+            <ul>
+                <li>写完想另起新篇 → <strong>刷新浏览器</strong>，获得全新空白输入区。</li>
+                <li>导出到其他软件 → 点击 <strong>“全选并复制”</strong>，然后粘贴到 <strong>Word、微信、知乎</strong> 等编辑器（选择 <strong>“保留源格式”</strong>），即可得到已排版的文本。</li>
+            </ul>
+        </li>
+    </ol>
+    
+    <h3>三、自定义修改（源代码就在HTML文件中）</h3>
+    <ul>
+        <li><strong>修改解析规则</strong>：找到约 <strong>第270行</strong> 的 <code>parseMinimalMarkdown()</code> 函数，改动输出格式（例如改变标题样式，实现粘贴到WORD以后你想要的格式）。</li>
+        <li><strong>修改快捷字符按钮</strong>：左栏上方有6个用于快速输入的字符按钮，想自定义它们，请修改约 <strong>第350行</strong> 的 <code>quickChars</code> 字符串数组。</li>
+    </ul>
+    
+    <a href="#" class="back-link" id="backToTopFromMini">← 返回目录</a>
+    
+    <hr>
+
+    <!-- ================= 第二部分：frequent-char ================= -->
+    <div id="frequent-char-section" class="section-anchor"></div>
+    <h2>📌 “frequent-char” 是写作时经常要用的字符串输入工具</h2>
+    
+    <h3>一、它是什么？与常见同类软件的区别</h3>
+    <h4>1 定位：适配<code>“个人使用频率”</code>和<code>“个性使用习惯”</code>的特殊字符输入工具。</h4>
+    <p>当我们要输入“⚠”“≠”这类特殊字符，或输入“闵行区报春路888弄……”这类长字符串时，通常有以下几种方式：</p>
+    <ul>
+        <li>输入法提供的自定义短语</li>
+        <li>热键工具提供的字符串映射</li>
+        <li>编辑器自带的特殊字符菜单（如字符映射表、Word符号菜单）</li>
+        <li>码点输入触发</li>
+        <li>互联网上搜索再复制</li>
+        <li>自备TXT文件保存常用字符，复制粘贴使用</li>
+    </ul>
+    <p>这些方法我统统觉得不好用：</p>
+    <ul>
+        <li>菜单窗口太小，翻找想用的字符太费劲</li>
+        <li>从选取到完成输入，动作路径过长</li>
+        <li>需要记忆映射编码，我有时记岔了，而且编码触发的有效概率不是100%</li>
+    </ul>
+    
+    <h4>2 与常规工具的核心不同：</h4>
+    <ul>
+        <li><strong>适配“个人使用频率”</strong>：frequent-char能统计用户使用频率，把高频字符排在前面</li>
+        <li>还可以手动修改频率排序，实现个性化插队占位</li>
+        <li><strong>适配“个性使用习惯”</strong>：特殊字符和常用短语不分类别、混排在一个大窗口里，反而更好找（频率排序后，不需要分类）</li>
+        <li>每个字符单元可以是单独的“①”“②”，也可以合并成“①②③④”，随意安排</li>
+        <li>点击一次，即复制对应字符</li>
+        <li>跨平台，免安装，轻量化</li>
+    </ul>
+    
+    <h3>二、怎么使用它？</h3>
+    <ol>
+        <li><strong>在线访问</strong>：<a href="https://cy-dogear.github.io/writing/frequent-char.html" target="_blank" rel="noopener">https://cy-dogear.github.io/writing/frequent-char.html</a></li>
+        <li><strong>离线使用</strong>：将HTML文件保存到桌面，双击打开即可</li>
+        <li><strong>日常操作</strong>：
+            <ul>
+                <li>点击想用的字符单元，即完成复制</li>
+                <li>想记录使用频率时，在窗口下方的表单区粘贴该字符，回车，使用频率“+1”被记录</li>
+            </ul>
+        </li>
+        <li><strong>自定义修改</strong>：窗口右下方的「导入」「导出」按钮可导出常用字符列表为TXT文件，修改TXT文件即可完成上述<code>“个性使用习惯”</code>适配……我懒得写更详细的说明啦。这个软件是我自己用的，我不从中谋利，懒得推广。分享到网上，希望有人喜欢它。</li>
+    </ol>
+    
+    <a href="#" class="back-link" id="backToTopFromFreq">← 返回目录</a>
+    
+    <footer>
+     
+    </footer>
+</div>
+
+<script>
+    // 补全链接跳转逻辑：
+    // 1. 两个“返回目录”链接平滑滚动到顶部的 .toc 目录区（即页面目录区域）
+    // 2. 同时支持目录中的两个锚点跳转已经在href中实现，但额外确保兼容性平滑滚动
+    // 3. 让所有内部锚点都使用平滑滚动行为，并且避免默认跳转生硬
+    
+    // 获取目录区域的位置（toc 区块）
+    const tocElement = document.querySelector('.toc');
+    const backLinks = document.querySelectorAll('.back-link');
+    
+    // 返回目录：滚动到目录区（或页面顶部目录索引位置）
+    function scrollToDirectory() {
+        if (tocElement) {
+            tocElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+    
+    // 为两个返回链接绑定事件
+    if (backLinks.length) {
+        backLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                scrollToDirectory();
+            });
+        });
+    }
+    
+    // 增强目录链接: 保留原生hash跳转但使用平滑滚动并优化用户体验
+    const tocLinks = document.querySelectorAll('.toc-link');
+    tocLinks.forEach(link => {
+        link.addEventListener('click', (event) => {
+            const hash = link.getAttribute('href');
+            if (hash && hash.startsWith('#')) {
+                event.preventDefault();
+                const targetId = hash.substring(1);
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // 可选更新url hash但不强制刷新滚动
+                    history.pushState(null, '', hash);
+                } else {
+                    // fallback
+                    window.location.hash = hash;
+                }
+            }
+        });
+    });
+    
+    /*
+    // 处理页面初始加载时如果有hash定位，平滑滚动并修正偏移量（避免被固定标题遮盖）
+    if (window.location.hash) {
+        const initialHash = window.location.hash.substring(1);
+        const targetElem = document.getElementById(initialHash);
+        if (targetElem) {
+            setTimeout(() => {
+                targetElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+    }
+    */
+    
+    // 额外增加对顶部目录索引的优雅跳转: 保证任何情况下点击带有id跳转的链接都平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        // 避免重复绑定已经绑定的toc-link，但做整体保护
+        if (anchor.classList && anchor.classList.contains('toc-link')) return;
+        if (anchor.id && (anchor.id === 'backToTopFromMini' || anchor.id === 'backToTopFromFreq')) return;
+        anchor.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href === '#') return;
+            const rawId = href.substring(1);
+            if (rawId && document.getElementById(rawId)) {
+                e.preventDefault();
+                const el = document.getElementById(rawId);
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                history.pushState(null, '', href);
+            }
+        });
+    });
+</script>
+</body>
+</html>

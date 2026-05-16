@@ -349,8 +349,7 @@ function isIgnoredChar(ch) {
         if (!inputText || inputText.length === 0) return;
         
         let addedAny = false;
-        for (let i = 0; i < inputText.length; i++) {
-            const ch = inputText[i];
+        for (const ch of inputText) {          // 改用 for...of 正确遍历 Unicode 字符
             if (isIgnoredChar(ch)) continue;
             const newCount = (frequencyMap.get(ch) || 0) + 1;
             frequencyMap.set(ch, newCount);

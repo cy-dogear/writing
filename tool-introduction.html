@@ -217,14 +217,14 @@
 
     <!-- ================= 第一部分：mini-MD ================= -->
     <div id="mini-md-section" class="section-anchor"></div>
-    <h2>📌 "mini-MD" is a Minimal Markdown Editor</h2>
+    <h1>📌 "mini-MD" is a Minimal Markdown Editor</h1>
     
-    <h3>一、它是什么？与常规 Markdown 解析器的区别</h3>
-    <h4>1 定位：一个“20kB”的轻量级输入中转站，用于带简易标记的纯文本初稿写作。</h4>
+    <h2>一、它是什么？与常规 Markdown 解析器的区别</h2>
+    <h3>1 定位：一个“20kB”的轻量级输入中转站，用于带简易标记的纯文本初稿写作。</h3>
     <p>我习惯用plain TXT写初稿，现在觉得在TXT基础上增加一些markdown标记，做到“纲举目张”也挺好，所以有了以下设计安排。<br>
     我不喜欢市面上的markdown编辑器（诸如notepad, VS code, WPS, Feishu），它们的解析设置不给用户修改（或是我没找到），所以做了这个叫做“mini-MD”的小工具。</p>
     
-    <h4>2 与常规工具的核心不同：</h4>
+    <h3>2 与常规工具的核心不同：</h3>
     <ul>
         <li><strong>保留空行</strong>：您输入的回车空行会原样保留（常见解析器会压缩连续空行），便于纯文本环境下阅读。</li>
         <li><strong>最小语法集</strong>：只支持 <strong>三级标题（#, ##, ###）</strong> + <strong>无序列表（- 或 *）</strong>，在这工具里用不着更多语法标记；这工具不是为了替代VS Code。</li>
@@ -232,7 +232,7 @@
         <li><strong>极度轻量</strong>：约20KB的单HTML文件，免安装，跨平台（保存到桌面即可离线使用）。</li>
     </ul>
     
-    <h3>二、怎么使用它？</h3>
+    <h2>二、怎么使用它？</h2>
     <ol>
         <li><strong>在线访问</strong>：<a href="https://cy-dogear.github.io/writing/mini-MD.html" target="_blank" rel="noopener">→ https://cy-dogear.github.io/writing/mini-MD.html</a></li>
         <li><strong>离线使用</strong>：将HTML文件保存到桌面，双击打开即可。</li>
@@ -244,7 +244,7 @@
         </li>
     </ol>
     
-    <h3>三、自定义修改（源代码就在HTML文件中）</h3>
+    <h2>三、自定义修改（源代码就在HTML文件中）</h2>
     <ul>
         <li><strong>修改解析规则</strong>：找到约 <strong>第270行</strong> 的 <code>parseMinimalMarkdown()</code> 函数，改动输出格式（例如改变标题样式，实现粘贴到WORD以后你想要的格式）。</li>
         <li><strong>修改快捷字符按钮</strong>：左栏上方有6个用于快速输入的字符按钮，想自定义它们，请修改约 <strong>第350行</strong> 的 <code>quickChars</code> 字符串数组。</li>
@@ -256,10 +256,10 @@
 
     <!-- ================= 第二部分：frequent-char ================= -->
     <div id="frequent-char-section" class="section-anchor"></div>
-    <h2>📌 “frequent-char” 是写作时经常要用的字符串输入工具</h2>
+    <h1>📌 “frequent-char” 是写作时经常要用的字符串输入工具</h1>
     
-    <h3>一、它是什么？与常见同类软件的区别</h3>
-    <h4>1 定位：适配<code>“个人使用频率”</code>和<code>“个性使用习惯”</code>的特殊字符输入工具。</h4>
+    <h2>一、它是什么？与常见同类软件的区别</h2>
+    <h3>1 定位：适配<code>“个人使用频率”</code>和<code>“个性使用习惯”</code>的特殊字符输入工具。</h3>
     <p>当我们要输入“⚠”“≠”这类特殊字符，或输入“闵行区报春路888弄……”这类长字符串时，通常有以下几种方式：</p>
     <ul>
         <li>输入法提供的自定义短语</li>
@@ -276,7 +276,7 @@
         <li>需要记忆映射编码，我有时记岔了，而且编码触发的有效概率不是100%</li>
     </ul>
     
-    <h4>2 与常规工具的核心不同：</h4>
+    <h3>2 与常规工具的核心不同：</h3>
     <ul>
         <li><strong>适配“个人使用频率”</strong>：frequent-char能统计用户使用频率，把高频字符排在前面</li>
         <li>还可以手动修改频率排序，实现个性化插队占位</li>
@@ -286,7 +286,7 @@
         <li>跨平台，免安装，轻量化</li>
     </ul>
     
-    <h3>二、怎么使用它？</h3>
+    <h2>二、怎么使用它？</h2>
     <ol>
         <li><strong>在线访问</strong>：<a href="https://cy-dogear.github.io/writing/frequent-char.html" target="_blank" rel="noopener">https://cy-dogear.github.io/writing/frequent-char.html</a></li>
         <li><strong>离线使用</strong>：将HTML文件保存到桌面，双击打开即可</li>
